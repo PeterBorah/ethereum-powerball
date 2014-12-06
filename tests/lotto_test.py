@@ -58,4 +58,4 @@ class TestLotto:
         assert_equal(self.contract.call(CHECK_WINNERS), [-1])
 
         self.state.mine(5)
-        assert_equal(self.contract.call(CHECK_WINNERS), [1,1,1,1,1,1])
+        assert_equal(self.contract.call(CHECK_WINNERS), [1,2,3,4,5,6])

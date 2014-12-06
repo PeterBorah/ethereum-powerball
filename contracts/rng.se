@@ -2,14 +2,40 @@ def random_numbers():
     raw = block.prevhash
     if raw < 0:
         raw = 0 - raw
-    
+
     values = []
 
     while i < 5:
         values[i] = (raw % 59) + 1
         raw = (raw / 100)
         i += 1
-    
+
     # Powerball
-    values[5] = raw % 35
-    return(values, 6)
+    sorted_values = self._sort(values[0], values[1], values[2], values[3], values[4],  outsz = 6)
+
+    sorted_values[5] = (raw % 35) + 1
+    return(sorted_values, 6)
+
+def _sort(first,second,third,fourth,fifth):
+    unsorted = [first, second, third, fourth, fifth]
+    result = []
+
+    i = 0
+    while i < 5:
+        smallest = 100
+        smallest_location = 0
+
+        j = 0
+        while j < 5:
+            if unsorted[j] < smallest:
+                smallest_location = j
+                smallest = unsorted[j]
+            j += 1
+
+        result[i] = smallest
+        unsorted[smallest_location] = 100
+
+        i += 1
+
+    return(result, 6)
+
