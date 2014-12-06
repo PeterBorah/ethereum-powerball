@@ -1,0 +1,2 @@
+def random_numbers():
+    return([1,1,1,1,1,1], 6)

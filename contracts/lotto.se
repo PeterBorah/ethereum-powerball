@@ -1,14 +1,18 @@
 data tickets[2^80](owner, numbers[5], powerball)
-data config(ticket_cost, admin, next_id)
+data config(ticket_cost, admin, next_id, rng)
 
 # 0
 def initialize():
   self.config.admin = msg.sender
 
 # 1
-def set_configuration(ticket_cost):
+def set_configuration(ticket_cost, rng_address):
   if msg.sender == self.config.admin:
     self.config.ticket_cost = ticket_cost
+    if rng_address != 0:
+      self.config.rng = rng_address
+    else:
+      self.config.rng = create('rng.se')
 
 # 2
 def buy_ticket(first, second, third, fourth, fifth, powerball):
