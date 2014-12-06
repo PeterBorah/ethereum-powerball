@@ -28,6 +28,13 @@ class TestLotto:
         assert_equal(address(self.contract.call(GET_TICKET_OWNER, [new_ticket_id])[0]), t.a0)
         assert_equal(self.contract.call(GET_TICKET_NUMBERS, [new_ticket_id]), new_numbers)
 
+    def test_lotto_closes_after_specified_block(self):
+        self.contract.call(SET_CONFIGURATION, [0, 0, 4])
+        self.state.mine(5)
+        numbers = [1, 3, 4, 5, 9, 35]
+
+        assert_equal(self.contract.call(BUY_TICKET, numbers), [-2])
+
     def test_ticket_prices(self):
         numbers = [1, 3, 4, 5, 9, 35]
         self.contract.call(SET_CONFIGURATION, [1])

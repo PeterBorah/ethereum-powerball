@@ -1,14 +1,16 @@
 data tickets[2^80](owner, numbers[5], powerball)
-data config(ticket_cost, admin, next_id, rng)
+data config(ticket_cost, admin, next_id, rng, block_deadline1)
 
 # 0
 def initialize():
   self.config.admin = msg.sender
 
 # 1
-def set_configuration(ticket_cost, rng_address):
+def set_configuration(ticket_cost, rng_address, block_deadline):
   if msg.sender == self.config.admin:
     self.config.ticket_cost = ticket_cost
+    self.config.block_deadline = block_deadline
+
     if rng_address != 0:
       self.config.rng = rng_address
     else:
@@ -17,19 +19,22 @@ def set_configuration(ticket_cost, rng_address):
 # 2
 def buy_ticket(first, second, third, fourth, fifth, powerball):
   if msg.value >= self.config.ticket_cost:
-    id = self.config.next_id
+    if block.number <= self.config.block_deadline:
+      id = self.config.next_id
 
-    self.tickets[id].owner = msg.sender
-    self.tickets[id].numbers[0] = first 
-    self.tickets[id].numbers[1] = second
-    self.tickets[id].numbers[2] = third
-    self.tickets[id].numbers[3] = fourth 
-    self.tickets[id].numbers[4] = fifth
-    self.tickets[id].powerball = powerball
+      self.tickets[id].owner = msg.sender
+      self.tickets[id].numbers[0] = first
+      self.tickets[id].numbers[1] = second
+      self.tickets[id].numbers[2] = third
+      self.tickets[id].numbers[3] = fourth
+      self.tickets[id].numbers[4] = fifth
+      self.tickets[id].powerball = powerball
 
-    self.config.next_id = id + 1
+      self.config.next_id = id + 1
 
-    return([id], 1)
+      return([id], 1)
+    else:
+      return(-2)
   else:
     return(-1)
 
