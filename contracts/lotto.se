@@ -2,6 +2,8 @@ extern rng = [random_numbers]
 
 data tickets[2^80](owner, numbers[5], powerball)
 data results[2^80](payout, claimed)
+data jackpot_results(count, winners[2^80])
+
 data config(ticket_cost, admin, next_id, rng_address, block_deadline, winning_numbers[6])
 data payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment, current_jackpot)
 
@@ -72,6 +74,8 @@ def check_winners():
         self._calculate_result(i)
         i += 1
 
+    self._calculate_jackpot_results()
+
     return(winning_numbers, 6)
 
 # 7
@@ -111,40 +115,59 @@ def set_payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, 
         return(-1)
 
 def _calculate_result(id):
-    matches = 0
+    if msg.sender == self:
+        matches = 0
 
-    i = 0
-    while i < 5:
-        j = 0
-        while j < 5:
-            if self.tickets[id].numbers[i] == self.config.winning_numbers[j]:
-                matches += 1
-            j += 1
+        i = 0
+        while i < 5:
+            j = 0
+            while j < 5:
+                if self.tickets[id].numbers[i] == self.config.winning_numbers[j]:
+                    matches += 1
+                j += 1
 
-        i += 1
+            i += 1
 
-    powerball = (self.tickets[id].powerball == self.config.winning_numbers[5])
+        if self.tickets[id].powerball == self.config.winning_numbers[5]:
+            powerball = 1
+        else:
+            powerball = 0
 
-    if (matches == 0) and (powerball == True):
-        self.results[id].payout = self.payouts.zero_and_pb
-    elif (matches == 1) and (powerball == True):
-        self.results[id].payout = self.payouts.one_and_pb
-    elif (matches == 2) and (powerball == True):
-        self.results[id].payout = self.payouts.two_and_pb
-    elif (matches == 3) and (powerball == False):
-        self.results[id].payout = self.payouts.three
-    elif (matches == 3) and (powerball == True):
-        self.results[id].payout = self.payouts.three_and_pb
-    elif (matches == 4) and (powerball == False):
-        self.results[id].payout = self.payouts.four
-    elif (matches == 4) and (powerball == True):
-        self.results[id].payout = self.payouts.four_and_pb
-    elif (matches == 5) and (powerball == False):
-        self.results[id].payout = self.payouts.five
-    elif (matches == 5) and (powerball == True):
-        self._add_jackpot_winner(id)
-
-    self.results[id].claimed = 0
+        if (matches == 0) and (powerball == 1):
+            self.results[id].payout = self.payouts.zero_and_pb
+        elif (matches == 1) and (powerball == 1):
+            self.results[id].payout = self.payouts.one_and_pb
+        elif (matches == 2) and (powerball == 1):
+            self.results[id].payout = self.payouts.two_and_pb
+        elif (matches == 3) and (powerball == 0):
+            self.results[id].payout = self.payouts.three
+        elif (matches == 3) and (powerball == 1):
+            self.results[id].payout = self.payouts.three_and_pb
+        elif (matches == 4) and (powerball == 0):
+            self.results[id].payout = self.payouts.four
+        elif (matches == 4) and (powerball == 1):
+            self.results[id].payout = self.payouts.four_and_pb
+        elif (matches == 5) and (powerball == 0):
+            self.results[id].payout = self.payouts.five
+        elif (matches == 5) and (powerball == 1):
+            self._add_jackpot_winner(id)
 
 def _add_jackpot_winner(id):
-    return(1)
+    if msg.sender == self:
+        count = self.jackpot_results.count
+        self.jackpot_results.count = count + 1
+        self.jackpot_results.winners[count] = id
+
+def _calculate_jackpot_results():
+    count = self.jackpot_results.count
+
+    i = 0
+    while i < count:
+        id = self.jackpot_results.winners[i]
+        self.results[id].payout = (self.payouts.current_jackpot / count)
+        i += 1
+
+    if count > 0:
+        self.payouts.current_jackpot = self.payouts.jackpot_base
+    else:
+        self.payouts.current_jackpot += self.payouts.jackpot_increment

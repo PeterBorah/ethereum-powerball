@@ -87,3 +87,15 @@ class TestLotto:
 
         assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [101])
         assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [-2])
+
+    def test_multiple_winners_split_jackpot(self):
+        rng = Contract("contracts/fake_rng.se", self.state)
+        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4], ether = 1000)
+        self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 0, 0, 0, 0, 1000, 0])
+        numbers = [1, 2, 5, 6, 7, 1]
+        ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
+        second_ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
+
+        self.state.mine(5)
+        assert_equal(self.contract.call(CHECK_WINNERS), [1,2,5,6,7,1])
+        assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [500])
