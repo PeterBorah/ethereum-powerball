@@ -1,0 +1,15 @@
+def random_numbers():
+    raw = block.prevhash
+    if raw < 0:
+        raw = 0 - raw
+    
+    values = []
+
+    while i < 5:
+        values[i] = (raw % 59) + 1
+        raw = (raw / 100)
+        i += 1
+    
+    # Powerball
+    values[5] = raw % 35
+    return(values, 6)
