@@ -1,0 +1,34 @@
+data tickets[2^80](owner, numbers[5], powerball)
+
+# 0
+def initialize():
+  self.storage["admin"] = msg.sender
+
+# 1
+def set_payouts(ticket_cost):
+  self.storage["ticket_cost"] = ticket_cost
+
+# 2
+def buy_ticket(first, second, third, fourth, fifth, powerball):
+  if msg.value >= self.storage["ticket_cost"]:
+    id = self.storage["next_id"]
+
+    self.tickets[id].owner = msg.sender
+    self.tickets[id].numbers[0] = first 
+    self.tickets[id].numbers[1] = second
+    self.tickets[id].numbers[2] = third
+    self.tickets[id].numbers[3] = fourth 
+    self.tickets[id].numbers[4] = fifth
+    self.tickets[id].powerball = powerball
+
+    self.storage["next_id"] = id + 1
+
+    return([id], 1)
+
+# 3
+def get_ticket_owner(id):
+  return(self.tickets[id].owner)
+
+# 4
+def get_ticket_numbers(id):
+  return([self.tickets[id].numbers[0], self.tickets[id].numbers[1], self.tickets[id].numbers[2], self.tickets[id].numbers[3], self.tickets[id].numbers[4], self.tickets[id].powerball], 6)
