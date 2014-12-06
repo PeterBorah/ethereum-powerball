@@ -8,6 +8,7 @@ BUY_TICKET = 2
 GET_TICKET_OWNER = 3
 GET_TICKET_NUMBERS = 4
 TRANSFER_TICKET = 5
+CHECK_WINNERS = 6
 
 class TestLotto:
     def setup(self):
@@ -50,3 +51,11 @@ class TestLotto:
         self.contract.call(TRANSFER_TICKET, [ticket_id, t.a1])
 
         assert_equal(address(self.contract.call(GET_TICKET_OWNER, [ticket_id])[0]), t.a1)
+
+    def test_check_winning_numbers(self):
+        rng = Contract("contracts/fake_rng.se", self.state)
+        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4])
+        assert_equal(self.contract.call(CHECK_WINNERS), [-1])
+
+        self.state.mine(5)
+        assert_equal(self.contract.call(CHECK_WINNERS), [1,1,1,1,1,1])

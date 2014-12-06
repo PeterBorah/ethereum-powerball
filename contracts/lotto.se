@@ -1,5 +1,7 @@
+extern rng = [random_numbers]
+
 data tickets[2^80](owner, numbers[5], powerball)
-data config(ticket_cost, admin, next_id, rng, block_deadline1)
+data config(ticket_cost, admin, next_id, rng_address, block_deadline, winning_numbers)
 
 # 0
 def initialize():
@@ -12,9 +14,9 @@ def set_configuration(ticket_cost, rng_address, block_deadline):
     self.config.block_deadline = block_deadline
 
     if rng_address != 0:
-      self.config.rng = rng_address
+      self.config.rng_address = rng_address
     else:
-      self.config.rng = create('rng.se')
+      self.config.rng_address = create('rng.se')
 
 # 2
 def buy_ticket(first, second, third, fourth, fifth, powerball):
@@ -50,3 +52,12 @@ def get_ticket_numbers(id):
 def transfer_ticket(id, new_owner):
   if self.tickets[id].owner == msg.sender:
     self.tickets[id].owner = new_owner
+
+# 6
+def check_winners():
+  if block.number <= self.config.block_deadline:
+    return(-1)
+  else:
+    random_numbers = self.config.rng_address.random_numbers(as=rng, outsz = 6)
+    self.config.winning_numbers = random_numbers
+    return(random_numbers, 6)
