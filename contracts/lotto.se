@@ -1,7 +1,9 @@
 extern rng = [random_numbers]
 
 data tickets[2^80](owner, numbers[5], powerball)
-data config(ticket_cost, admin, next_id, rng_address, block_deadline, winning_numbers)
+data results[2^80](payout, claimed)
+data config(ticket_cost, admin, next_id, rng_address, block_deadline, winning_numbers[6])
+data payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment, current_jackpot)
 
 # 0
 def initialize():
@@ -58,6 +60,86 @@ def check_winners():
   if block.number <= self.config.block_deadline:
     return(-1)
   else:
-    random_numbers = self.config.rng_address.random_numbers(as=rng, outsz = 6)
-    self.config.winning_numbers = random_numbers
-    return(random_numbers, 6)
+    winning_numbers = self.config.rng_address.random_numbers(as=rng, outsz = 6)
+
+    i = 0
+    while i < 6:
+        self.config.winning_numbers[i] = winning_numbers[i]
+        i += 1
+
+    i = 0
+    while i < self.config.next_id:
+        self._calculate_result(i)
+        i += 1
+
+    return(winning_numbers, 6)
+
+# 7
+def claim_winnings(id):
+    owner = self.tickets[id].owner
+    if owner == msg.sender:
+        payout = self.results[id].payout
+        send(owner, payout)
+        self.results[id].claimed = True
+        return(payout)
+
+# 8
+def get_balance():
+    return([self.balance])
+
+# 9
+def set_payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment):
+    if msg.sender == self.config.admin:
+        self.payouts.zero_and_pb = zero_and_pb
+        self.payouts.one_and_pb = one_and_pb
+        self.payouts.two_and_pb = two_and_pb
+        self.payouts.three = three
+        self.payouts.three_and_pb = three_and_pb
+        self.payouts.four = four
+        self.payouts.four_and_pb = four_and_pb
+        self.payouts.five = five
+        self.payouts.jackpot_base = jackpot_base
+        self.payouts.jackpot_increment = jackpot_increment
+        self.payouts.current_jackpot = jackpot_base
+        return(1)
+    else:
+        return(-1)
+
+def _calculate_result(id):
+    matches = 0
+
+    i = 0
+    while i < 5:
+        j = 0
+        while j < 5:
+            if self.tickets[id].numbers[i] == self.config.winning_numbers[j]:
+                matches += 1
+            j += 1
+
+        i += 1
+
+    powerball = (self.tickets[id].powerball == self.config.winning_numbers[5])
+
+    if (matches == 0) and (powerball == True):
+        self.results[id].payout = self.payouts.zero_and_pb
+    elif (matches == 1) and (powerball == True):
+        self.results[id].payout = self.payouts.one_and_pb
+    elif (matches == 2) and (powerball == True):
+        self.results[id].payout = self.payouts.two_and_pb
+    elif (matches == 3) and (powerball == False):
+        self.results[id].payout = self.payouts.three
+    elif (matches == 3) and (powerball == True):
+        self.results[id].payout = self.payouts.three_and_pb
+    elif (matches == 4) and (powerball == False):
+        self.results[id].payout = self.payouts.four
+    elif (matches == 4) and (powerball == True):
+        self.results[id].payout = self.payouts.four_and_pb
+    elif (matches == 5) and (powerball == False):
+        self.results[id].payout = self.payouts.five
+    elif (matches == 5) and (powerball == True):
+        self._add_jackpot_winner(id)
+
+    self.results[id].claimed = False
+
+def _add_jackpot_winner(id):
+    return(1)
