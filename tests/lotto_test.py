@@ -26,3 +26,11 @@ class TestLotto:
 
         assert_equal(address(self.contract.call(GET_TICKET_OWNER, [new_ticket_id])[0]), t.a0)
         assert_equal(self.contract.call(GET_TICKET_NUMBERS, [new_ticket_id]), new_numbers)
+
+    def test_transfering_ticket(self):
+        numbers = [1, 3, 4, 5, 9, 35]
+        ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
+
+        self.contract.call(TRANSFER_TICKET, [ticket_id, t.a1])
+
+        assert_equal(address(self.contract.call(GET_TICKET_OWNER, [ticket_id])[0]), t.a1)
