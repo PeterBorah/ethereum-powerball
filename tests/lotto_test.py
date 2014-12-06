@@ -74,3 +74,16 @@ class TestLotto:
         assert_equal(self.contract.call(CHECK_WINNERS), [1,2,5,6,7,1])
 
         assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [101])
+
+    def test_cannot_double_claim_winnings(self):
+        rng = Contract("contracts/fake_rng.se", self.state)
+        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4], ether = 1000)
+        self.contract.call(SET_PAYOUTS, [0, 0, 1000, 101, 0, 0, 0, 0, 0, 0])
+        numbers = [1, 2, 3, 4, 5, 35]
+        ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
+
+        self.state.mine(5)
+        assert_equal(self.contract.call(CHECK_WINNERS), [1,2,5,6,7,1])
+
+        assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [101])
+        assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [-2])
