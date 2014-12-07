@@ -9,76 +9,76 @@ data payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, fou
 
 # 0
 def initialize():
-  self.config.admin = msg.sender
+    self.config.admin = msg.sender
 
 # 1
 def set_configuration(ticket_cost, rng_address, lottery_length, redemption_length):
-  if msg.sender == self.config.admin:
-    if (redemption_deadline == 0) or block.number > redemption_deadline:
-      self.config.lottery_length = lottery_length
-      self.config.redemption_length = redemption_length
-      self.config.ticket_cost = ticket_cost
+    if msg.sender == self.config.admin:
+        if (redemption_deadline == 0) or block.number > redemption_deadline:
+            self.config.lottery_length = lottery_length
+            self.config.redemption_length = redemption_length
+            self.config.ticket_cost = ticket_cost
 
-      if rng_address != 0:
-          self.config.rng_address = rng_address
-      else:
-          self.config.rng_address = create('rng.se')
+            if rng_address != 0:
+                self.config.rng_address = rng_address
+            else:
+                self.config.rng_address = create('rng.se')
 
 # 2
 def buy_ticket(first, second, third, fourth, fifth, powerball):
-  if msg.value >= self.config.ticket_cost:
-    if block.number <= self.config.lottery_deadline:
-      id = self.config.next_id
+    if msg.value >= self.config.ticket_cost:
+        if block.number <= self.config.lottery_deadline:
+            id = self.config.next_id
 
-      self.tickets[id].owner = msg.sender
-      self.tickets[id].numbers[0] = first
-      self.tickets[id].numbers[1] = second
-      self.tickets[id].numbers[2] = third
-      self.tickets[id].numbers[3] = fourth
-      self.tickets[id].numbers[4] = fifth
-      self.tickets[id].powerball = powerball
+            self.tickets[id].owner = msg.sender
+            self.tickets[id].numbers[0] = first
+            self.tickets[id].numbers[1] = second
+            self.tickets[id].numbers[2] = third
+            self.tickets[id].numbers[3] = fourth
+            self.tickets[id].numbers[4] = fifth
+            self.tickets[id].powerball = powerball
 
-      self.config.next_id = id + 1
+            self.config.next_id = id + 1
 
-      return([id], 1)
+            return([id], 1)
+        else:
+            return(-2)
     else:
-      return(-2)
-  else:
-    return(-1)
+        return(-1)
 
 # 3
 def get_ticket_owner(id):
-  return(self.tickets[id].owner)
+    return(self.tickets[id].owner)
 
 # 4
 def get_ticket_numbers(id):
-  return([self.tickets[id].numbers[0], self.tickets[id].numbers[1], self.tickets[id].numbers[2], self.tickets[id].numbers[3], self.tickets[id].numbers[4], self.tickets[id].powerball], 6)
+    return([self.tickets[id].numbers[0], self.tickets[id].numbers[1], self.tickets[id].numbers[2], self.tickets[id].numbers[3], self.tickets[id].numbers[4], self.tickets[id].powerball], 6)
 
 # 5
 def transfer_ticket(id, new_owner):
-  if self.tickets[id].owner == msg.sender:
-    self.tickets[id].owner = new_owner
+    if self.tickets[id].owner == msg.sender:
+        self.tickets[id].owner = new_owner
 
 # 6
 def check_winners():
-  if block.number <= self.config.lottery_deadline:
-    return(-1)
-  else:
-    winning_numbers = self.config.rng_address.random_numbers(as=rng, outsz = 6)
+    if block.number <= self.config.lottery_deadline:
+        return(-1)
+    else:
+        winning_numbers = self.config.rng_address.random_numbers(as=rng, outsz = 6)
 
-    i = 0
-    while i < 6:
-        self.config.winning_numbers[i] = winning_numbers[i]
-        i += 1
+        i = 0
+        while i < 6:
+            self.config.winning_numbers[i] = winning_numbers[i]
+            i += 1
 
-    i = 0
-    while i < self.config.next_id:
-        self._calculate_result(i)
-        i += 1
+        i = 0
+        while i < self.config.next_id:
+            self._calculate_result(i)
+            i += 1
 
-    self._calculate_jackpot_results()
+        self._calculate_jackpot_results()
 
-    return(winning_numbers, 6)
+        return(winning_numbers, 6)
 
 # 7
 def claim_winnings(id):
