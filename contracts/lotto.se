@@ -4,7 +4,7 @@ data tickets[2^80](owner, numbers[5], powerball)
 data results[2^80](payout, claimed)
 data jackpot_results(count, winners[2^80])
 
-data config(ticket_cost, admin, next_id, rng_address, block_deadline, redemption_deadline, winning_numbers[6])
+data config(ticket_cost, admin, next_id, rng_address, lottery_length, redemption_length, lottery_deadline, redemption_deadline, winning_numbers[6])
 data payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment, current_jackpot)
 
 # 0
@@ -15,9 +15,9 @@ def initialize():
 def set_configuration(ticket_cost, rng_address, lottery_length, redemption_length):
   if msg.sender == self.config.admin:
     if (redemption_deadline == 0) or block.number > redemption_deadline:
+      self.config.lottery_length = lottery_length
+      self.config.redemption_length = redemption_length
       self.config.ticket_cost = ticket_cost
-      self.config.block_deadline = block.number + lottery_length
-      self.config.redemption_deadline = block.number + lottery_length + redemption_length
 
       if rng_address != 0:
           self.config.rng_address = rng_address
@@ -27,7 +27,7 @@ def set_configuration(ticket_cost, rng_address, lottery_length, redemption_lengt
 # 2
 def buy_ticket(first, second, third, fourth, fifth, powerball):
   if msg.value >= self.config.ticket_cost:
-    if block.number <= self.config.block_deadline:
+    if block.number <= self.config.lottery_deadline:
       id = self.config.next_id
 
       self.tickets[id].owner = msg.sender
@@ -61,7 +61,7 @@ def transfer_ticket(id, new_owner):
 
 # 6
 def check_winners():
-  if block.number <= self.config.block_deadline:
+  if block.number <= self.config.lottery_deadline:
     return(-1)
   else:
     winning_numbers = self.config.rng_address.random_numbers(as=rng, outsz = 6)
@@ -126,6 +126,17 @@ def withdraw(amount):
     else:
         send(msg.sender, amount)
         return(amount)
+
+# 11
+def start_lotto():
+    if msg.sender == self.config.admin and block.number > self.config.redemption_deadline:
+        self.config.lottery_deadline = block.number + self.config.lottery_length
+        self.config.redemption_deadline = self.config.lottery_deadline + self.config.redemption_length
+        self.config.next_id = 0
+        self.jackpot_results.count = 0
+        return(1)
+    else:
+        return(-1)
 
 def _calculate_result(id):
     if msg.sender == self:
