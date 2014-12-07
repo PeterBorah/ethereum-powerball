@@ -14,14 +14,15 @@ def initialize():
 # 1
 def set_configuration(ticket_cost, rng_address, lottery_length, redemption_length):
   if msg.sender == self.config.admin:
-    self.config.ticket_cost = ticket_cost
-    self.config.block_deadline = block.number + lottery_length
-    self.config.redemption_deadline = block.number + lottery_length + redemption_length
+    if (redemption_deadline == 0) or block.number > redemption_deadline:
+      self.config.ticket_cost = ticket_cost
+      self.config.block_deadline = block.number + lottery_length
+      self.config.redemption_deadline = block.number + lottery_length + redemption_length
 
-    if rng_address != 0:
-      self.config.rng_address = rng_address
-    else:
-      self.config.rng_address = create('rng.se')
+      if rng_address != 0:
+          self.config.rng_address = rng_address
+      else:
+          self.config.rng_address = create('rng.se')
 
 # 2
 def buy_ticket(first, second, third, fourth, fifth, powerball):
@@ -100,18 +101,19 @@ def get_balance():
 # 9
 def set_payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment):
     if msg.sender == self.config.admin:
-        self.payouts.zero_and_pb = zero_and_pb
-        self.payouts.one_and_pb = one_and_pb
-        self.payouts.two_and_pb = two_and_pb
-        self.payouts.three = three
-        self.payouts.three_and_pb = three_and_pb
-        self.payouts.four = four
-        self.payouts.four_and_pb = four_and_pb
-        self.payouts.five = five
-        self.payouts.jackpot_base = jackpot_base
-        self.payouts.jackpot_increment = jackpot_increment
-        self.payouts.current_jackpot = jackpot_base
-        return(1)
+        if (redemption_deadline == 0) or block.number > redemption_deadline:
+            self.payouts.zero_and_pb = zero_and_pb
+            self.payouts.one_and_pb = one_and_pb
+            self.payouts.two_and_pb = two_and_pb
+            self.payouts.three = three
+            self.payouts.three_and_pb = three_and_pb
+            self.payouts.four = four
+            self.payouts.four_and_pb = four_and_pb
+            self.payouts.five = five
+            self.payouts.jackpot_base = jackpot_base
+            self.payouts.jackpot_increment = jackpot_increment
+            self.payouts.current_jackpot = jackpot_base
+            return(1)
     else:
         return(-1)
 
