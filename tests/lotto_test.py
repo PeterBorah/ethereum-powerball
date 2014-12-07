@@ -12,6 +12,7 @@ CHECK_WINNERS = 6
 CLAIM_WINNINGS = 7
 GET_BALANCE = 8
 SET_PAYOUTS = 9
+WITHDRAW = 10
 
 class TestLotto:
     def setup(self):
@@ -99,3 +100,12 @@ class TestLotto:
         self.state.mine(5)
         assert_equal(self.contract.call(CHECK_WINNERS), [1,2,5,6,7,1])
         assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [500])
+
+    def test_withdrawl_is_only_possible_after_deadline(self):
+        self.contract.call(SET_CONFIGURATION, [0, 0, 2, 2], ether = 1000)
+
+        assert_equal(self.contract.call(WITHDRAW, [500]), [-1])
+
+        self.state.mine(5)
+
+        assert_equal(self.contract.call(WITHDRAW, [500]), [500])

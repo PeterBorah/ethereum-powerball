@@ -4,7 +4,7 @@ data tickets[2^80](owner, numbers[5], powerball)
 data results[2^80](payout, claimed)
 data jackpot_results(count, winners[2^80])
 
-data config(ticket_cost, admin, next_id, rng_address, block_deadline, winning_numbers[6])
+data config(ticket_cost, admin, next_id, rng_address, block_deadline, redemption_deadline, winning_numbers[6])
 data payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment, current_jackpot)
 
 # 0
@@ -12,10 +12,11 @@ def initialize():
   self.config.admin = msg.sender
 
 # 1
-def set_configuration(ticket_cost, rng_address, block_deadline):
+def set_configuration(ticket_cost, rng_address, lottery_length, redemption_length):
   if msg.sender == self.config.admin:
     self.config.ticket_cost = ticket_cost
-    self.config.block_deadline = block_deadline
+    self.config.block_deadline = block.number + lottery_length
+    self.config.redemption_deadline = block.number + lottery_length + redemption_length
 
     if rng_address != 0:
       self.config.rng_address = rng_address
@@ -113,6 +114,16 @@ def set_payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, 
         return(1)
     else:
         return(-1)
+
+# 10
+def withdraw(amount):
+    if block.number <= self.config.redemption_deadline:
+        return(-1)
+    elif msg.sender != self.config.admin:
+        return(-2)
+    else:
+        send(msg.sender, amount)
+        return(amount)
 
 def _calculate_result(id):
     if msg.sender == self:
