@@ -8,7 +8,15 @@ def random_numbers():
     while i < 5:
         values[i] = (raw % 59) + 1
         raw = (raw / 100)
-        i += 1
+
+        duplicate = 0
+        while j < i:
+            if values[j] == values[i]:
+                duplicate = 1
+            j += 1
+
+        if duplicate == 0:
+            i += 1
 
     # Powerball
     sorted_values = self._sort(values[0], values[1], values[2], values[3], values[4],  outsz = 6)
