@@ -5,7 +5,7 @@ data results[2^80](payout, claimed)
 data jackpot_results(count, winners[2^80])
 
 data config(ticket_cost, admin, next_id, rng_address, lottery_length, redemption_length, lottery_deadline, redemption_deadline, winning_numbers[6])
-data payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment, current_jackpot)
+data payouts(zero_and_pb, one, one_and_pb, two, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment, current_jackpot)
 
 # 0
 def initialize():
@@ -99,11 +99,13 @@ def get_balance():
     return([self.balance])
 
 # 9
-def set_payouts(zero_and_pb, one_and_pb, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment):
+def set_payouts(zero_and_pb, one, one_and_pb, two, two_and_pb, three, three_and_pb, four, four_and_pb, five, jackpot_base, jackpot_increment):
     if msg.sender == self.config.admin:
         if (redemption_deadline == 0) or block.number > redemption_deadline:
             self.payouts.zero_and_pb = zero_and_pb
+            self.payouts.one = one
             self.payouts.one_and_pb = one_and_pb
+            self.payouts.two = two
             self.payouts.two_and_pb = two_and_pb
             self.payouts.three = three
             self.payouts.three_and_pb = three_and_pb
@@ -159,8 +161,12 @@ def _calculate_result(id):
 
         if (matches == 0) and (powerball == 1):
             self.results[id].payout = self.payouts.zero_and_pb
+        elif (matches == 1) and (powerball == 0):
+            self.results[id].payout = self.payouts.one
         elif (matches == 1) and (powerball == 1):
             self.results[id].payout = self.payouts.one_and_pb
+        elif (matches == 2) and (powerball == 0):
+            self.results[id].payout = self.payouts.two
         elif (matches == 2) and (powerball == 1):
             self.results[id].payout = self.payouts.two_and_pb
         elif (matches == 3) and (powerball == 0):

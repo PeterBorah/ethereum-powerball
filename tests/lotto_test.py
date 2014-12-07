@@ -74,7 +74,7 @@ class TestLotto:
     def test_claim_winnings(self):
         rng = Contract("contracts/fake_rng.se", self.state)
         self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4], ether = 1000)
-        self.contract.call(SET_PAYOUTS, [0, 0, 1000, 101, 0, 0, 0, 0, 0, 0])
+        self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 1000, 101, 0, 0, 0, 0, 0, 0])
         self.contract.call(START_LOTTO)
         numbers = [1, 2, 3, 4, 5, 35]
         ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
@@ -87,7 +87,7 @@ class TestLotto:
     def test_cannot_double_claim_winnings(self):
         rng = Contract("contracts/fake_rng.se", self.state)
         self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4], ether = 1000)
-        self.contract.call(SET_PAYOUTS, [0, 0, 1000, 101, 0, 0, 0, 0, 0, 0])
+        self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 1000, 101, 0, 0, 0, 0, 0, 0])
         self.contract.call(START_LOTTO)
         numbers = [1, 2, 3, 4, 5, 35]
         ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
@@ -101,7 +101,7 @@ class TestLotto:
     def test_multiple_winners_split_jackpot(self):
         rng = Contract("contracts/fake_rng.se", self.state)
         self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4], ether = 1000)
-        self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 0, 0, 0, 0, 1000, 0])
+        self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1000, 0])
         self.contract.call(START_LOTTO)
         numbers = [1, 2, 5, 6, 7, 1]
         ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
@@ -124,7 +124,7 @@ class TestLotto:
     def test_start_new_lotto(self):
         rng = Contract("contracts/fake_rng.se", self.state)
         self.contract.call(SET_CONFIGURATION, [0, rng.contract, 2, 2], ether = 1000)
-        self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 0, 0, 0, 0, 1000, 0])
+        self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1000, 0])
         self.contract.call(START_LOTTO)
         assert_equal(self.contract.call(START_LOTTO), [-1])
 
