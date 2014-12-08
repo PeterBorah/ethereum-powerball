@@ -3,6 +3,7 @@ ethereum-powerball
 
 "Powerball"-style lottery written in Serpent, for prophetx's bounty.
 
+This code is provided as a technical proof of concept. Please be aware that lotteries are subject to a great deal of regulation, and that actually launching this contract on a live blockchain is not guaranteed to be legal.
 
 # Basic setup:
 
