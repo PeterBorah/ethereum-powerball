@@ -73,7 +73,7 @@ class TestLotto:
 
     def test_claim_winnings(self):
         rng = Contract("contracts/fake_rng.se", self.state)
-        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4], ether = 1000)
+        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4, 4], ether = 1000)
         self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 1000, 101, 0, 0, 0, 0, 0, 0])
         self.contract.call(START_LOTTO)
         numbers = [1, 2, 3, 4, 5, 35]
@@ -84,9 +84,22 @@ class TestLotto:
 
         assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [101])
 
+    def test_cannot_claim_winnings_after_deadline(self):
+        rng = Contract("contracts/fake_rng.se", self.state)
+        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 2, 2], ether = 1000)
+        self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 1000, 101, 0, 0, 0, 0, 0, 0])
+        self.contract.call(START_LOTTO)
+        numbers = [1, 2, 3, 4, 5, 35]
+        ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
+
+        self.state.mine(5)
+        assert_equal(self.contract.call(CHECK_WINNERS), [1,2,5,6,7,1])
+
+        assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [-1])
+
     def test_cannot_double_claim_winnings(self):
         rng = Contract("contracts/fake_rng.se", self.state)
-        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4], ether = 1000)
+        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4, 4], ether = 1000)
         self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 1000, 101, 0, 0, 0, 0, 0, 0])
         self.contract.call(START_LOTTO)
         numbers = [1, 2, 3, 4, 5, 35]
@@ -100,7 +113,7 @@ class TestLotto:
 
     def test_multiple_winners_split_jackpot(self):
         rng = Contract("contracts/fake_rng.se", self.state)
-        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4], ether = 1000)
+        self.contract.call(SET_CONFIGURATION, [0, rng.contract, 4, 4], ether = 1000)
         self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1000, 0])
         self.contract.call(START_LOTTO)
         numbers = [1, 2, 5, 6, 7, 1]
@@ -111,7 +124,7 @@ class TestLotto:
         assert_equal(self.contract.call(CHECK_WINNERS), [1,2,5,6,7,1])
         assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [500])
 
-    def test_withdrawal_is_only_possible_after_deadline(self):
+    def test_withdrawal_is_only_possible_after_lotto_deadline(self):
         self.contract.call(SET_CONFIGURATION, [0, 0, 2, 2], ether = 1000)
         self.contract.call(START_LOTTO)
 
@@ -135,6 +148,6 @@ class TestLotto:
         ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
         assert_equal(ticket_id, 0)
 
-        self.state.mine(5)
+        self.state.mine(3)
         assert_equal(self.contract.call(CHECK_WINNERS), [1,2,5,6,7,1])
         assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [1000])

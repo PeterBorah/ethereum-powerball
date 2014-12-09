@@ -83,7 +83,7 @@ def check_winners():
 # 7
 def claim_winnings(id):
     owner = self.tickets[id].owner
-    if owner == msg.sender:
+    if (owner == msg.sender) and (block.number <= self.config.redemption_deadline):
         if self.results[id].claimed == 1:
             return(-2)
         else:
