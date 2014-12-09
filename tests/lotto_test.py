@@ -84,6 +84,20 @@ class TestLotto:
 
         assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [101])
 
+    def test_cannot_overwrite_winning_numbers(self):
+        self.contract.call(SET_CONFIGURATION, [0, 0, 4, 4], ether = 1000)
+        self.contract.call(SET_PAYOUTS, [0, 0, 0, 0, 1000, 101, 0, 0, 0, 0, 0, 0])
+        self.contract.call(START_LOTTO)
+
+        self.state.mine(5)
+
+        winning_numbers = self.contract.call(CHECK_WINNERS)
+        assert_equal(len(winning_numbers), 6)
+
+        self.state.mine(1)
+
+        assert_equal(self.contract.call(CHECK_WINNERS), [-2])
+
     def test_cannot_claim_winnings_after_deadline(self):
         rng = Contract("contracts/fake_rng.se", self.state)
         self.contract.call(SET_CONFIGURATION, [0, rng.contract, 2, 2], ether = 1000)
@@ -93,6 +107,7 @@ class TestLotto:
         ticket_id = self.contract.call(BUY_TICKET, numbers)[0]
 
         self.state.mine(5)
+
         assert_equal(self.contract.call(CHECK_WINNERS), [1,2,5,6,7,1])
 
         assert_equal(self.contract.call(CLAIM_WINNINGS, [ticket_id]), [-1])

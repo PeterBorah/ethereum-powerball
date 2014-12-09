@@ -61,8 +61,10 @@ def transfer_ticket(id, new_owner):
 
 # 6
 def check_winners():
-    if block.number <= self.config.lottery_deadline:
+    if (block.number <= self.config.lottery_deadline):
         return(-1)
+    elif self.config.winning_numbers[0] != 0:
+        return(-2)
     else:
         winning_numbers = self.config.rng_address.random_numbers(as=rng, outsz = 6)
 
@@ -136,6 +138,12 @@ def start_lotto():
         self.config.redemption_deadline = self.config.lottery_deadline + self.config.redemption_length
         self.config.next_id = 0
         self.jackpot_results.count = 0
+
+        i = 0
+        while i < 6:
+            self.config.winning_numbers[i] = 0
+            i += 1
+
         return(1)
     else:
         return(-1)
