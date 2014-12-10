@@ -36,6 +36,11 @@ class TestLotto:
         assert_equal(address(self.contract.call(GET_TICKET_OWNER, [new_ticket_id])[0]), t.a0)
         assert_equal(self.contract.call(GET_TICKET_NUMBERS, [new_ticket_id]), new_numbers)
 
+    def test_cannot_buy_invalid_ticket(self):
+        numbers = [1, 1, 2, 3, 5, 8]
+        self.contract.call(START_LOTTO)
+        assert_equal(self.contract.call(BUY_TICKET, numbers), [-3])
+
     def test_lotto_closes_after_specified_block(self):
         self.contract.call(SET_CONFIGURATION, [0, 0, 4])
         self.contract.call(START_LOTTO)

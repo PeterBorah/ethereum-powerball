@@ -30,6 +30,9 @@ def buy_ticket(first, second, third, fourth, fifth, powerball):
         if block.number <= self.config.lottery_deadline:
             id = self.config.next_id
 
+            if self._validate_ticket(first, second, third, fourth, fifth, powerball) != 1:
+                return(-3)
+
             self.tickets[id].owner = msg.sender
             self.tickets[id].numbers[0] = first
             self.tickets[id].numbers[1] = second
@@ -209,3 +212,22 @@ def _calculate_jackpot_results():
         self.payouts.current_jackpot = self.payouts.jackpot_base
     else:
         self.payouts.current_jackpot += self.payouts.jackpot_increment
+
+def _validate_ticket(first, second, third, fourth, fifth, powerball):
+    if (powerball < 1) or (powerball > 35):
+        return(-1)
+
+    numbers = [first, second, third, fourth, fifth]
+
+    i = 0
+    while i < 5:
+        if (numbers[i] < 1) or (numbers[i] > 59):
+            return(-1)
+        j = 0
+        while j < 5:
+            if (i != j) and (numbers[i] == numbers[j]):
+                return(-1)
+            j += 1
+        i += 1
+
+    return(1)
